@@ -1,10 +1,8 @@
 "use client";
 import Image from "next/image";
 import useSWR from "swr";
-// import Link from "next/link";
 import axios from "axios";
-import { useState } from "react";
-// const fetcher = (url: string) => fetch(url).then((res) => res.json());
+import { useState } from "react"; // Add this import
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
 interface Breed {
@@ -15,42 +13,85 @@ interface Breed {
   };
 }
 export default function Home() {
-  // const [breedName, setBreedName] = useState("");
+  const [breedName, setBreedName] = useState("");
+  const [searchTerm, setSearchTerm] = useState(""); // State for the search term
+
   const { data, error, isLoading } = useSWR(
-    "http://localhost:8000/api/breeds",
-    // breedName ? `http://localhost:8000/api/breeds?name=${breedName}` : null,
+    searchTerm
+      ? `http://localhost:8000/api/breeds?name=${searchTerm}`
+      : "http://localhost:8000/api/breeds",
     fetcher
   );
 
-  // const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   setBreedName(e.target.value);
-  // };
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault(); // Prevent default form submission
+    setSearchTerm(breedName);
+  };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="bg-gray-100 border border-gray-300 rounded p-4 shadow-md text-center">
+          <p className="text-blue-600 font-semibold">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
-  console.log("data:", data);
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="bg-red-100 border border-red-300 rounded p-4 shadow-md text-center">
+          <p className="text-red-600 font-semibold">Error: {error.message}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      {/* <h1>Dog Breeds</h1>
-     <input type="text" 
-     value={breedName}
-     onChange={handleInputChange}
-     placeholder="Enter dog breed"
-     />
-     
-     <button onClick={() => setBreedName(breedName)}>Search</button> */}
+      <div className="fixed top-0 left-0 right-0 p-4 bg-black z-10">
+        {/* <form onSubmit={handleSubmit}> */}
+        <form onSubmit={handleSubmit} className="flex items-center">
+          {" "}
+          {/* Flex container for alignment */} {/* Form to handle submission */}
+          <input
+            type="text"
+            value={breedName}
+            onChange={(e) => setBreedName(e.target.value)} // Update breedName on input change
+            placeholder="Enter dog breed"
+            className="border rounded-l p-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" // Updated styles
+          />
+          <button
+            type="submit"
+            className="ml-2 p-2 border rounded-r bg-blue-500 text-white hover:bg-blue-600 transition duration-200" // Updated styles
+          >
+            {" "}
+            Search
+          </button>
+        </form>
+      </div>
 
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        {data.breeds.map((breed: Breed) => (
-          <div
-            key={breed.id}
-            className="p-4 border rounded shadow hover:shadow-lg"
-          >
-            <h2 className="text-lg font-bold">{breed.attributes.name}</h2>
-            <p>{breed.attributes.description}</p>
-          </div>
-        ))}
+        {data ? (
+          data.breeds ? ( // Check if data and data.breeds are defined
+            data.breeds.map((breed: Breed) => (
+              <div
+                key={breed.id}
+                className="p-4 border rounded shadow hover:shadow-lg"
+              >
+                <h2 className="text-lg font-bold">{breed.attributes.name}</h2>
+                <p>{breed.attributes.description}</p>
+              </div>
+            ))
+          ) : (
+            <div className="bg-yellow-100 border border-yellow-300 rounded p-4 shadow-md text-center">
+              <p className="text-yellow-600 font-semibold">No breeds found.</p>
+            </div>
+          )
+        ) : (
+          <div>No data available.</div> // Optional: Handle the case when data is undefined
+        )}
         <Image
           className="dark:invert"
           src="/next.svg"
@@ -66,9 +107,6 @@ export default function Home() {
               src/app/page.tsx
             </code>
             .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly. Sebastian Cheung here
           </li>
         </ol>
 
