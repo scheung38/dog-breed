@@ -2,7 +2,7 @@
 import Image from "next/image";
 import useSWR from "swr";
 import axios from "axios";
-import { useState } from "react"; // Add this import
+import { useState } from "react";
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
 interface Breed {
@@ -14,17 +14,18 @@ interface Breed {
 }
 export default function Home() {
   const [breedName, setBreedName] = useState("");
-  const [searchTerm, setSearchTerm] = useState(""); // State for the search term
+  const [searchTerm, setSearchTerm] = useState("");
 
   const { data, error, isLoading } = useSWR(
     searchTerm
       ? `http://localhost:8000/api/breeds?name=${searchTerm}`
       : "http://localhost:8000/api/breeds",
-    fetcher
+    fetcher,
+    { refreshInterval: 60000 }
   );
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault();
     setSearchTerm(breedName);
   };
 
@@ -51,14 +52,11 @@ export default function Home() {
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <div className="fixed top-0 left-0 right-0 p-4 bg-black z-10">
-        {/* <form onSubmit={handleSubmit}> */}
         <form onSubmit={handleSubmit} className="flex items-center">
-          {" "}
-          {/* Flex container for alignment */} {/* Form to handle submission */}
           <input
             type="text"
             value={breedName}
-            onChange={(e) => setBreedName(e.target.value)} // Update breedName on input change
+            onChange={(e) => setBreedName(e.target.value)}
             placeholder="Enter dog breed"
             className="border rounded-l p-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" // Updated styles
           />

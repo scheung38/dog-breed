@@ -12,22 +12,21 @@ async def get_all_breeds(name: str = Query(None)):
     async with httpx.AsyncClient() as client:
         while next_page_url:
             try:
-                res = await client.get(next_page_url)  # Awaiting the asynchronous call
+                res = await client.get(next_page_url)   
                 res.raise_for_status()
 
-                data = res.json()  # Move this line inside the try block
+                data = res.json()   
 
-                page_breeds = data.get("data", [])  # Move this line inside the try block
-                breeds.extend(page_breeds)  # Move this line inside the try block
+                page_breeds = data.get("data", [])   
+                breeds.extend(page_breeds)   
 
-                # Get next page if exists
-                next_page_url = data.get("links", {}).get("next")  # Move this line inside the try block
+                next_page_url = data.get("links", {}).get("next")   
 
             except httpx.HTTPStatusError as e:
                 return {"error": f"HTTP error occurred: {e.response.status_code} - {e.response.text}"}
             except httpx.RequestError as e:
                 return {"error": f"Request error occurred: {str(e)}"}
-            except Exception as e:  # Catch any other exceptions
+            except Exception as e:   
                 return {"error": f"An error occurred: {str(e)}"}
 
     # Optional filtering
